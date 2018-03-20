@@ -6,6 +6,7 @@ module datapath(clock, resetn, start, draw, finish, x, y, colour);
 	output [7:0] x;
 	output [6:0] y;
 	output reg [2:0] colour;
+	reg count;
 	
 	reg [3:0] counter;
 	reg [7:0] temp_x, orig_x;
@@ -32,16 +33,17 @@ module datapath(clock, resetn, start, draw, finish, x, y, colour);
          	temp_y <= 7'd58;
 			orig_x <= temp_x;
 			orig_y <= temp_y;
-			colour_out <= 3'd2; //colour of obs SETTING
+			colour <= 3'd2; //colour of obs SETTING
 			finish <= 1'b0;
       	end
-		else if (next) begin //erase obj and ready for next drawing
-			colour_out <= 3'd0; 
+		else if (next && temp_x < 8'd150) begin //erase obj and ready for next drawing
+			colour <= 3'd0; 
 			temp_x <= orig_x;
 			temp_y <= orig_y;
 			orig_x <= orig_x + 1'b1;
 			colour <= 3'd0;
 			finish <= 1'b1;
+			count <= 1'b1;
 		end
    end
 	
@@ -50,8 +52,14 @@ module datapath(clock, resetn, start, draw, finish, x, y, colour);
 	   if (!resetn) begin
 			counter <= 4'd0; 
 	   end
-	   else if (draw) begin
+	   else begin
+		   if (count < draw) begin
+			   count <= draw;
+		   end
 		   counter <= counter + 1;
+		   if (counter == 4'b1111) begin
+			   count <= 1'b0;
+		   end
 	   end
    end
 	
