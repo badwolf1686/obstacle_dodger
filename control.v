@@ -18,9 +18,9 @@ module control(clock, resetn, ld, finish, writeEnable, draw);
 				//Let go of start key to plot, otherwise still loading values	
 				S_LOAD_VALS: next_state = ld ? S_LOAD_VALS : S_PLOT; 
 				//When object hits end/object collides, go to finishing state
-				S_PLOT: next_state = finish ? S_PLOT_FINISH : S_PLOT_FINISH;
+				S_PLOT: next_state = finish ? S_PLOT_FINISH : S_PLOT;
 				//In finish state, object does not move until reset to original position
-				S_PLOT_FINISH: next_state = !resetn ? S_BEGIN : S_PLOT_FINISH; 
+				S_PLOT_FINISH: next_state = ~resetn ? S_BEGIN : S_PLOT_FINISH; 
 			default: next_state = S_BEGIN;
 		endcase
 	end // state_table
