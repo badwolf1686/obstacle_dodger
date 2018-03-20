@@ -1,12 +1,11 @@
 //160 x 120 screen?
 
-module datapath(clock, resetn, colour, go, x, y, colour_out);
-	input clock, resetn;
-	input [2:0] colour;
-	input go;
+module datapath(clock, resetn, enable, draw, finish, x, y, colour);
+	input clock, resetn, enable, draw;
+	output finish;
 	output [7:0] x;
 	output [6:0] y;
-	output reg [2:0] colour_out;
+	output reg [2:0] colour;
 	
 	reg [3:0] counter;
 	reg [7:0] temp_x, orig_x;
@@ -35,14 +34,15 @@ module datapath(clock, resetn, colour, go, x, y, colour_out);
 			orig_y <= temp_y;
 			colour_out <= 3'd2; //colour of obs SETTING
       	end
-      	else begin
-			if (next) //erase obj and ready for next drawing
+		else if (draw) begin
+			if (next) begin //erase obj and ready for next drawing
 				colour_out <= 3'd0; 
 				temp_x <= orig_x;
 				temp_y <= orig_y;
 				orig_x <= orig_x + 1'b1;
-			end
+				colour <= 3'd0;
 		end
+		else 
    end
 	
 	//obj counter
@@ -50,9 +50,8 @@ module datapath(clock, resetn, colour, go, x, y, colour_out);
 	   if (!resetn) begin
 			counter <= 4'd0; 
       end
-	   else if (counter != 4'b1111) begin
+	   else if (draw) begin
 		   counter <= counter + 1;
-		   draw <= 1'b0;
 	   end
    end
 	
