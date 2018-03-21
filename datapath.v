@@ -33,7 +33,7 @@ module datapath(clock, resetn, draw, finish, x, y, colour);
 			colour <= 3'd2; //colour of obs SETTING
 			finish <= 1'b0;
       	end
-		else if (next && temp_x < 8'd100) begin //erase obj and ready for next drawing
+		else if (next) begin //erase obj and ready for next drawing
 			colour <= 3'd0; 
 			temp_x <= orig_x;
 			temp_y <= orig_y;
@@ -45,7 +45,7 @@ module datapath(clock, resetn, draw, finish, x, y, colour);
 		end
 		else begin
 			colour <= 3'd2;
-			finish <= 1'b0;
+		finish <= 1'b0;
 		end
    end
 	
@@ -74,11 +74,11 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock)
 	begin
 		if (!resetn) begin
-				delay <= 20'b10111110101111000010000000;//1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'd100;//b10111110101111000010000000;//1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'b10111110101111000010000000;//b1100_1011_0111_0011_0110;
+				delay <= 20'd100;//b10111110101111000010000000;//b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;
@@ -97,7 +97,7 @@ module frame_counter(clock, resetn, enable, next);
 	output next;
 	reg [3:0] frame;
 	
-	always @(posedge clock)
+	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
 			frame <= 4'b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING

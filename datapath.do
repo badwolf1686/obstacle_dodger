@@ -1,12 +1,15 @@
 vlib work
 
-vlog -timescale 1ns/1ns obstacledodger.v
+vlog -timescale 1ns/1ns obstacledodger.v control.v datapath.v
 
 vsim obstacledodger
 
 log {/*}
 
 add wave {/*}
+add wave -position insertpoint sim:/obstacledodger/d1/*
+add wave -position insertpoint sim:/obstacledodger/d1/f1/*
+add wave -position insertpoint sim:/obstacledodger/d1/d1/*
 
 force {KEY[0]} 0 0, 1 25
 force {CLOCK_50} 0 0, 1 1 -r 2
