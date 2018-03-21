@@ -1,12 +1,9 @@
-//160 x 120 screen?
-
-module datapath(clock, resetn, start, draw, finish, x, y, colour);
-	input clock, resetn, start, draw;
+module datapath(clock, resetn, draw, finish, x, y, colour);
+	input clock, resetn, draw;
 	output reg finish;
 	output [7:0] x;
 	output [6:0] y;
 	output reg [2:0] colour;
-	reg count;
 	
 	reg [3:0] counter;
 	reg [7:0] temp_x, orig_x;
@@ -16,34 +13,39 @@ module datapath(clock, resetn, start, draw, finish, x, y, colour);
 	delay_counter d1(
 		.clock(clock),
 		.resetn(resetn),
-		.enable(go),
-		.go(frame)
+		.enable(draw), // ip
+		.go(frame)     // op
 		);
 		
 	frame_counter f1(
-		.clock(clock),
+		.clock(frame),
 		.resetn(resetn),
-		.enable(frame),
+		.enable(1),
 		.next(next)
 		);
 	
 	always @(posedge clock) begin
 		if (!resetn) begin
 			temp_x <= 8'd10; //obj starts at (10,58)(left top) SETTING
-         	temp_y <= 7'd58;
+         temp_y <= 7'd58;
 			orig_x <= temp_x;
 			orig_y <= temp_y;
 			colour <= 3'd2; //colour of obs SETTING
 			finish <= 1'b0;
       	end
-		else if (next && temp_x < 8'd150) begin //erase obj and ready for next drawing
+		else if (next && temp_x < 8'd100) begin //erase obj and ready for next drawing
 			colour <= 3'd0; 
 			temp_x <= orig_x;
 			temp_y <= orig_y;
 			orig_x <= orig_x + 1'b1;
-			colour <= 3'd0;
+			finish <= 1'b0;
+		end
+		else if (temp_x > 8'd100) begin
 			finish <= 1'b1;
-			count <= 1'b1;
+		end
+		else begin
+			colour <= 3'd2;
+			finish <= 1'b0;
 		end
    end
 	
@@ -53,13 +55,7 @@ module datapath(clock, resetn, start, draw, finish, x, y, colour);
 			counter <= 4'd0; 
 	   end
 	   else begin
-		   if (count < draw) begin
-			   count <= draw;
-		   end
 		   counter <= counter + 1;
-		   if (counter == 4'b1111) begin
-			   count <= 1'b0;
-		   end
 	   end
    end
 	
@@ -78,11 +74,11 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock)
 	begin
 		if (!resetn) begin
-				delay <= 20'b1100_1011_0111_0011_0100; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'b10111110101111000010000000;//1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'b1100_1011_0111_0011_0100;
+				delay <= 20'b10111110101111000010000000;//b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;

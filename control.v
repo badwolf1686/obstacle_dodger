@@ -3,12 +3,12 @@ module control(clock, resetn, ld, finish, writeEnable, draw);
 	output reg writeEnable;
 	output reg draw;
 
-	reg [3:0] current_state, next_state; 
+	reg [1:0] current_state, next_state; 
 	
-	localparam  S_BEGIN 				= 4'd0,
-				S_LOAD_VALS      		= 4'd1,
-				S_PLOT   				= 4'd2,
-				S_PLOT_FINISH   		= 4'd3;
+	localparam  S_BEGIN 				= 2'd0,
+				S_LOAD_VALS      		= 2'd1,
+				S_PLOT   				= 2'd2,
+				S_PLOT_FINISH   		= 2'd3;
 	
 	always@(*)
 	begin: state_table 
@@ -30,6 +30,10 @@ module control(clock, resetn, ld, finish, writeEnable, draw);
 		writeEnable = 1'b0;
 		draw = 1'b0;
 		case (current_state)
+			S_BEGIN:begin
+				writeEnable = 1'b1;
+				draw = 1'b1;
+			end
 			S_PLOT: begin
 				writeEnable = 1'b1;
 				draw = 1'b1;
