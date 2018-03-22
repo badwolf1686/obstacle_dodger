@@ -1,5 +1,5 @@
-module datapath(clock, resetn, draw, finish, x, y, colour);
-	input clock, resetn, draw;
+module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
+	input clock, resetn, draw, setoff;
 	output reg finish;
 	output [7:0] x;
 	output [6:0] y;
@@ -13,7 +13,7 @@ module datapath(clock, resetn, draw, finish, x, y, colour);
 	delay_counter d1(
 		.clock(clock),
 		.resetn(resetn),
-		.enable(draw), // ip
+		.enable(setoff), // ip
 		.go(frame)     // op
 		);
 		
@@ -42,10 +42,11 @@ module datapath(clock, resetn, draw, finish, x, y, colour);
 		end
 		else if (temp_x > 8'd100) begin
 			finish <= 1'b1;
+			colour <= 3'd2;
 		end
 		else begin
 			colour <= 3'd2;
-		finish <= 1'b0;
+			finish <= 1'b0;
 		end
    end
 	
@@ -71,14 +72,14 @@ module delay_counter(clock, resetn, enable, go);
 	output go;
 	reg [19:0] delay;
 	
-	always @(posedge clock)
+	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-				delay <= 20'd100;//b10111110101111000010000000;//1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'd100;//b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'd100;//b10111110101111000010000000;//b1100_1011_0111_0011_0110;
+				delay <= 20'd100;//b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;

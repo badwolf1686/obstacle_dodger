@@ -10,6 +10,7 @@ add wave {/*}
 add wave -position insertpoint sim:/obstacledodger/d1/*
 add wave -position insertpoint sim:/obstacledodger/d1/f1/*
 add wave -position insertpoint sim:/obstacledodger/d1/d1/*
+add wave -position insertpoint sim:/obstacledodger/c1/*
 
 force {KEY[0]} 0 0, 1 25
 force {CLOCK_50} 0 0, 1 1 -r 2

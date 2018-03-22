@@ -1,7 +1,7 @@
-module control(clock, resetn, ld, finish, writeEnable, draw);
+module control(clock, resetn, ld, finish, writeEnable, draw, setoff);
 	input clock, resetn, ld, finish; //finish = 1 if object reaches end or if object hits obstacle
 	output reg writeEnable;
-	output reg draw;
+	output reg draw, setoff;
 
 	reg [1:0] current_state, next_state; 
 	
@@ -29,14 +29,17 @@ module control(clock, resetn, ld, finish, writeEnable, draw);
 	begin: enable_signals
 		writeEnable = 1'b0;
 		draw = 1'b0;
+		setoff = 1'b0;
 		case (current_state)
 			S_BEGIN:begin
 				writeEnable = 1'b1;
 				draw = 1'b1;
+				setoff = 1'b0;
 			end
 			S_PLOT: begin
 				writeEnable = 1'b1;
 				draw = 1'b1;
+				setoff = 1'b1;
 			end
 			S_PLOT_FINISH: begin
 				writeEnable = 1'b0;

@@ -1,4 +1,4 @@
-module obstacledodger
+module obstacle_dodger
 	(
 		CLOCK_50,						//	On Board 50 MHz
 		// Your inputs and outputs here
@@ -40,26 +40,26 @@ module obstacledodger
 	// Create an Instance of a VGA controller - there can be only one!
 	// Define the number of colours as well as the initial background
 	// image file (.MIF) for the controller.
-//	vga_adapter VGA(
-//			.resetn(resetn),
-//			.clock(CLOCK_50),
-//			.colour(colour),
-//			.x(x),
-//			.y(y),
-//			.plot(writeEn),
-//			/* Signals for the DAC to drive the monitor. */
-//			.VGA_R(VGA_R),
-//			.VGA_G(VGA_G),
-//			.VGA_B(VGA_B),
-//			.VGA_HS(VGA_HS),
-//			.VGA_VS(VGA_VS),
-//			.VGA_BLANK(VGA_BLANK_N),
-//			.VGA_SYNC(VGA_SYNC_N),
-//			.VGA_CLK(VGA_CLK));
-//		defparam VGA.RESOLUTION = "160x120";
-//		defparam VGA.MONOCHROME = "FALSE";
-//		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
-//		defparam VGA.BACKGROUND_IMAGE = "black.mif";
+	vga_adapter VGA(
+			.resetn(resetn),
+			.clock(CLOCK_50),
+			.colour(colour),
+			.x(x),
+			.y(y),
+			.plot(writeEn),
+			/* Signals for the DAC to drive the monitor. */
+			.VGA_R(VGA_R),
+			.VGA_G(VGA_G),
+			.VGA_B(VGA_B),
+			.VGA_HS(VGA_HS),
+			.VGA_VS(VGA_VS),
+			.VGA_BLANK(VGA_BLANK_N),
+			.VGA_SYNC(VGA_SYNC_N),
+			.VGA_CLK(VGA_CLK));
+		defparam VGA.RESOLUTION = "160x120";
+		defparam VGA.MONOCHROME = "FALSE";
+		defparam VGA.BITS_PER_COLOUR_CHANNEL = 1;
+		defparam VGA.BACKGROUND_IMAGE = "black.mif";
 			
 	// Put your code here. Your code should produce signals x,y,colour and writeEn/plot
 	// for the VGA controller, in addition to any other functionality your design may require.
@@ -69,10 +69,12 @@ module obstacledodger
 	
 	wire draw;
 	wire finish;
+	wire setoff;
 
 	datapath d1(.clock(CLOCK_50), 
 				.resetn(resetn),
 				.draw(draw), 
+				.setoff(setoff),
 				.finish(finish), 
 				.x(x), 
 				.y(y), 
@@ -85,7 +87,8 @@ module obstacledodger
 			  .ld(~KEY[1]),
 			  .finish(finish),
 			  .writeEnable(writeEn),
-			  .draw(draw)
+			  .draw(draw),
+			  .setoff(setoff)
 			  );
     
 endmodule
