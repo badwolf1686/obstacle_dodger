@@ -1,4 +1,4 @@
-module obstacle_dodger
+module obstacledodger
 	(
 		CLOCK_50,						//	On Board 50 MHz
 		// Your inputs and outputs here

@@ -9,11 +9,11 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	reg [7:0] temp_x, orig_x;
 	reg [6:0] temp_y, orig_y;
 	
-	wire next, frame;
+   wire next, frame;
 	delay_counter d1(
 		.clock(clock),
 		.resetn(resetn),
-		.enable(setoff), // ip
+		.enable(setoff & (counter == 4'b1111)), // ip
 		.go(frame)     // op
 		);
 		
@@ -37,12 +37,11 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 			colour <= 3'd0; 
 			temp_x <= orig_x;
 			temp_y <= orig_y;
-			orig_x <= orig_x + 1'b1;
 			finish <= 1'b0;
 		end
 		else if (temp_x > 8'd100) begin
-			finish <= 1'b1;
 			colour <= 3'd2;
+			finish <= 1'b1;
 		end
 		else begin
 			colour <= 3'd2;
@@ -50,12 +49,17 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 		end
    end
 	
+	//increment orig_x when start erasing obj
+	always @(posedge next) begin
+			orig_x <= orig_x + 1;
+	end
+	
 	//obj counter
    always @(posedge clock) begin
 	   if (!resetn) begin
 			counter <= 4'd0; 
 	   end
-	   else begin
+	   else if (draw) begin
 		   counter <= counter + 1;
 	   end
    end
@@ -75,11 +79,11 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-				delay <= 20'd100;//b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'd10;//b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'd100;//b1100_1011_0111_0011_0110;
+				delay <= 20'd10;//b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;
@@ -101,11 +105,11 @@ module frame_counter(clock, resetn, enable, next);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-			frame <= 4'b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
+			frame <= 4'd3;//b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
 		end
 		else if (enable) begin
 			if (frame == 4'd0) begin
-				frame <= 4'b1110;
+				frame <= 4'd3;//b1110;
 			end
 			else begin
 				frame <= frame - 1'b1;
