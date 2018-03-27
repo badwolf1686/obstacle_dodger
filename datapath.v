@@ -6,10 +6,16 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	output reg [2:0] colour;
 	
 	reg [3:0] counter;
+	reg is_obs;
 	reg [7:0] temp_x, orig_x;
 	reg [6:0] temp_y, orig_y;
 	
-   wire next, frame;
+	reg [7:0] obs_x;
+	reg [6:0] obs_y;
+	reg [2:0] obs_colour;
+	wire obs_finish;
+	
+   	wire next, frame;
 	delay_counter d1(
 		.clock(clock),
 		.resetn(resetn),
@@ -24,10 +30,21 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 		.next(next)
 		);
 	
+	//obstacle datapath
+	obs_datapath od1(
+		.clock(clock),
+		.resetn(resetn),
+		.draw(draw),
+		.finish(obs_finish),
+		.x(obs_x),
+		.y(obs_y),
+		.colour(obs_colour),
+		);
+	
 	always @(posedge clock) begin
 		if (!resetn) begin
 			temp_x <= 8'd10; //obj starts at (10,58)(left top) SETTING
-         temp_y <= 7'd58;
+         	temp_y <= 7'd58;
 			orig_x <= temp_x;
 			orig_y <= temp_y;
 			colour <= 3'd2; //colour of obs SETTING
@@ -47,25 +64,30 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 			colour <= 3'd2;
 			finish <= 1'b0;
 		end
-   end
-	
-	//increment orig_x when start erasing obj
-	always @(posedge next) begin
-			orig_x <= orig_x + 1;
 	end
 	
-	//obj counter
+	//draw counter
    always @(posedge clock) begin
 	   if (!resetn) begin
-			counter <= 4'd0; 
+			counter <= 4'd0;
+		   	is_obs <= 1'b1;
 	   end
 	   else if (draw) begin
 		   counter <= counter + 1;
 	   end
+	   
+	   if (counter == 4'b1111) begin
+		   is_obs <= !is_obs;
+	   end
    end
 	
-	assign x = temp_x + counter[1:0];
-	assign y = temp_y + counter[3:2];
+	if (is_obs) begin
+		assign x = obs_x;
+		assign y = obs_y;
+	else begin
+		assign x = temp_x + counter[1:0];
+		assign y = temp_y + counter[3:2];
+	end
 
 endmodule
 
@@ -79,11 +101,11 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-				delay <= 20'd10;//b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'd10;//b1100_1011_0111_0011_0110;
+				delay <= 20'b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;
@@ -105,11 +127,11 @@ module frame_counter(clock, resetn, enable, next);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-			frame <= 4'd3;//b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
+			frame <= 4'b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
 		end
 		else if (enable) begin
 			if (frame == 4'd0) begin
-				frame <= 4'd3;//b1110;
+				frame <= 4'b1110;
 			end
 			else begin
 				frame <= frame - 1'b1;
