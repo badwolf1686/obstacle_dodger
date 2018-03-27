@@ -1,5 +1,5 @@
-module obs_datapath(clock, resetn, draw, setoff, finish, x, y, colour);
-	input clock, resetn, draw, setoff;
+module obs_datapath(clock, resetn, draw, finish, x, y, colour);
+	input clock, resetn, draw;
 	output reg finish;
 	output [7:0] x;
 	output [6:0] y;
@@ -10,11 +10,11 @@ module obs_datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	reg [7:0] temp_x, orig_x;
 	reg [6:0] temp_y, orig_y;
 	
-   wire next, frame;
+   	wire next, frame;
 	delay_counter d1(
 		.clock(clock),
 		.resetn(resetn),
-		.enable(setoff & (counter == 5'b11111)), // ip
+		.enable(draw), // ip
 		.go(frame) // op
 		);
 		
@@ -25,10 +25,18 @@ module obs_datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 		.next(next)
 		);
 	
+	wire [4:0] random_num;
+	//random number from 64 to 95 (x position)
+	module fibonacci_lfsr_5bit r1(
+		.clk(clock),
+		.rst_n(resetn),
+		.data(random_num)
+		);
+	
 	always @(posedge clock) begin
 		if (!resetn) begin
-			temp_x <= 8'd100; //obj starts at (100,0)(left top) SETTING
-         temp_y <= 7'd0;
+			temp_x <= {3'b010, random_num}; //obj starts at (rand,0)(left top) SETTING
+         	temp_y <= 7'd0;
 			orig_x <= temp_x;
 			orig_y <= temp_y;
 			colour <= 3'd1; //colour of obs SETTING
@@ -90,11 +98,11 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-				delay <= 20'd10;//b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'd10;//b1100_1011_0111_0011_0110;
+				delay <= 20'b1100_1011_0111_0011_0110;
 			end
 			else begin
 				delay <= delay - 1'b1;
@@ -116,11 +124,11 @@ module frame_counter(clock, resetn, enable, next);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-			frame <= 4'd3;//b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
+			frame <= 4'b1010; //(10 pixels per second) SETTING
 		end
 		else if (enable) begin
 			if (frame == 4'd0) begin
-				frame <= 4'd3;//b1110;
+				frame <= 4'b1010;
 			end
 			else begin
 				frame <= frame - 1'b1;
@@ -136,26 +144,26 @@ endmodule
 //fibonacci random generator
 //https://stackoverflow.com/a/20145147
 module fibonacci_lfsr_5bit(
-  input clk,
-  input rst_n,
+  	input clk,
+  	input rst_n,
 
-  output reg [4:0] data
+	output reg [4:0] data
 );
 
-reg [4:0] data_next;
+	reg [4:0] data_next;
 
-always @* begin
-  data_next[4] = data[4]^data[1];
-  data_next[3] = data[3]^data[0];
-  data_next[2] = data[2]^data_next[4];
-  data_next[1] = data[1]^data_next[3];
-  data_next[0] = data[0]^data_next[2];
-end
+	always @(*) begin
+  		data_next[4] = data[4]^data[1];
+  		data_next[3] = data[3]^data[0];
+  		data_next[2] = data[2]^data_next[4];
+  		data_next[1] = data[1]^data_next[3];
+  		data_next[0] = data[0]^data_next[2];
+	end
 
-always @(posedge clk or negedge rst_n)
-  if(!rst_n)
-    data <= 5'h1f;
-  else
-    data <= data_next;
+	always @(posedge clk or negedge rst_n)
+  		if(!rst_n)
+    		data <= 5'h1f;
+  		else
+    		data <= data_next;
 
 endmodule
