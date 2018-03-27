@@ -27,7 +27,7 @@ module obs_datapath(clock, resetn, draw, finish, x, y, colour);
 	
 	wire [4:0] random_num;
 	//random number from 64 to 95 (x position)
-	module fibonacci_lfsr_5bit r1(
+	fibonacci_lfsr_5bit r1(
 		.clk(clock),
 		.rst_n(resetn),
 		.data(random_num)
@@ -61,17 +61,18 @@ module obs_datapath(clock, resetn, draw, finish, x, y, colour);
 		if (temp_y <= 7'd0) begin
 			down <= 1'b1;
 		end
+		
+		
+		//increment orig_y when start erasing obj
+		if (next && !frame) begin
+			if (down) begin
+				orig_y <= orig_y + 1;
+			end
+			else begin
+				orig_y <= orig_y - 1;
+			end
+		end
    end
-	
-	//increment orig_y when start erasing obj
-	always @(posedge next) begin
-		if (down) begin
-			orig_y <= orig_y + 1;
-		end
-		else begin
-			orig_y <= orig_y - 1;
-		end
-	end
 	
 	//obj counter
    always @(posedge clock) begin
@@ -89,56 +90,56 @@ module obs_datapath(clock, resetn, draw, finish, x, y, colour);
 endmodule
 
 
-//1/60 delay counter
-module delay_counter(clock, resetn, enable, go);
-	input clock, resetn, enable;
-	output go;
-	reg [19:0] delay;
-	
-	always @(posedge clock or negedge resetn)
-	begin
-		if (!resetn) begin
-				delay <= 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
-			end
-		else if (enable) begin
-			if (delay == 20'd0) begin
-				delay <= 20'b1100_1011_0111_0011_0110;
-			end
-			else begin
-				delay <= delay - 1'b1;
-			end
-		end
-	end
-	
-	assign go = (delay == 1'b0) ? 1 : 0;
-	
-endmodule
-
-
-//frame counter (moving speed)
-module frame_counter(clock, resetn, enable, next);
-	input clock, resetn, enable;
-	output next;
-	reg [3:0] frame;
-	
-	always @(posedge clock or negedge resetn)
-	begin
-		if (!resetn) begin
-			frame <= 4'b1010; //(10 pixels per second) SETTING
-		end
-		else if (enable) begin
-			if (frame == 4'd0) begin
-				frame <= 4'b1010;
-			end
-			else begin
-				frame <= frame - 1'b1;
-			end
-		end
-	end
-	
-	assign next = (frame == 1'b0) ? 1 : 0;
-	
-endmodule
+////1/60 delay counter
+//module delay1(clock, resetn, enable, go);
+//	input clock, resetn, enable;
+//	output go;
+//	reg [19:0] delay;
+//	
+//	always @(posedge clock or negedge resetn)
+//	begin
+//		if (!resetn) begin
+//				delay <= 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+//			end
+//		else if (enable) begin
+//			if (delay == 20'd0) begin
+//				delay <= 20'b1100_1011_0111_0011_0110;
+//			end
+//			else begin
+//				delay <= delay - 1'b1;
+//			end
+//		end
+//	end
+//	
+//	assign go = (delay == 1'b0) ? 1 : 0;
+//	
+//endmodule
+//
+//
+////frame counter (moving speed)
+//module frame1(clock, resetn, enable, next);
+//	input clock, resetn, enable;
+//	output next;
+//	reg [3:0] frame;
+//	
+//	always @(posedge clock or negedge resetn)
+//	begin
+//		if (!resetn) begin
+//			frame <= 4'b1010; //(10 pixels per second) SETTING
+//		end
+//		else if (enable) begin
+//			if (frame == 4'd0) begin
+//				frame <= 4'b1010;
+//			end
+//			else begin
+//				frame <= frame - 1'b1;
+//			end
+//		end
+//	end
+//	
+//	assign next = (frame == 1'b0) ? 1 : 0;
+//	
+//endmodule
 
 
 //fibonacci random generator

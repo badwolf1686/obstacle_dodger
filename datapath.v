@@ -1,8 +1,8 @@
 module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	input clock, resetn, draw, setoff;
 	output reg finish;
-	output [7:0] x;
-	output [6:0] y;
+	output reg [7:0] x;
+	output reg [6:0] y;
 	output reg [2:0] colour;
 	
 	reg [3:0] counter;
@@ -10,9 +10,9 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	reg [7:0] temp_x, orig_x;
 	reg [6:0] temp_y, orig_y;
 	
-	reg [7:0] obs_x;
-	reg [6:0] obs_y;
-	reg [2:0] obs_colour;
+	wire [7:0] obs_x;
+	wire [6:0] obs_y;
+	wire [2:0] obs_colour;
 	wire obs_finish;
 	
    	wire next, frame;
@@ -44,24 +44,24 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	always @(posedge clock) begin
 		if (!resetn) begin
 			temp_x <= 8'd10; //obj starts at (10,58)(left top) SETTING
-         	temp_y <= 7'd58;
+         temp_y <= 7'd58;
 			orig_x <= temp_x;
 			orig_y <= temp_y;
-			colour <= 3'd2; //colour of obs SETTING
+//			colour <= 3'd2; //colour of obs SETTING
 			finish <= 1'b0;
       	end
 		else if (next) begin //erase obj and ready for next drawing
-			colour <= 3'd0; 
+//			colour <= 3'd0; 
 			temp_x <= orig_x;
 			temp_y <= orig_y;
 			finish <= 1'b0;
 		end
 		else if (temp_x > 8'd100) begin
-			colour <= 3'd2;
+//			colour <= 3'd2;
 			finish <= 1'b1;
 		end
 		else begin
-			colour <= 3'd2;
+//			colour <= 3'd2;
 			finish <= 1'b0;
 		end
 	end
@@ -81,12 +81,22 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 	   end
    end
 	
-	if (is_obs) begin
-		assign x = obs_x;
-		assign y = obs_y;
-	else begin
-		assign x = temp_x + counter[1:0];
-		assign y = temp_y + counter[3:2];
+	always @(*) begin
+		if (is_obs) begin
+			x <= obs_x;
+			y <= obs_y;
+			end
+		else begin
+			x <= temp_x + counter[1:0];
+			y <= temp_y + counter[3:2];
+		end
+	
+		if (next) begin
+			colour <= 3'd0;
+		end
+		else begin
+			colour <= is_obs ? obs_colour : 3'd2;
+		end
 	end
 
 endmodule
