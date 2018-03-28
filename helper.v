@@ -1,5 +1,7 @@
 //1/60 delay counter
 module delay_counter(clock, resetn, enable, go);
+	parameter DELAY = 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+	
 	input clock, resetn, enable;
 	output go;
 	reg [19:0] delay;
@@ -7,25 +9,27 @@ module delay_counter(clock, resetn, enable, go);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-				delay <= 20'b1100_1011_0111_0011_0110; //50,000,000 / 60 - 1(1/60 sec)
+				delay <= DELAY;
 			end
 		else if (enable) begin
 			if (delay == 20'd0) begin
-				delay <= 20'b1100_1011_0111_0011_0110;
+				delay <= DELAY;
 			end
 			else begin
-				delay <= delay - 1'b1;
+				delay <= delay - 20'd1;
 			end
 		end
 	end
 	
-	assign go = (delay == 1'b0) ? 1 : 0;
+	assign go = (delay == 20'd0) ? 1'b1 : 1'b0;
 	
 endmodule
 
 
 //frame counter (moving speed)
 module frame_counter(clock, resetn, enable, next);
+	parameter FRAME = 4'b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
+	
 	input clock, resetn, enable;
 	output next;
 	reg [3:0] frame;
@@ -33,19 +37,19 @@ module frame_counter(clock, resetn, enable, next);
 	always @(posedge clock or negedge resetn)
 	begin
 		if (!resetn) begin
-			frame <= 4'b1110; //60 / 4 - 1(60 / 4 pixels per second) SETTING
+			frame <= FRAME;
 		end
 		else if (enable) begin
 			if (frame == 4'd0) begin
-				frame <= 4'b1110;
+				frame <= FRAME;
 			end
 			else begin
-				frame <= frame - 1'b1;
+				frame <= frame - 4'd1;
 			end
 		end
 	end
 	
-	assign next = (frame == 1'b0) ? 1 : 0;
+	assign next = (frame == 4'd0) ? 1'b1 : 1'b0;
 	
 endmodule
 
