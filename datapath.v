@@ -26,7 +26,6 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 		orig_y <= 7'd58;
 		finish <= 1'b0;
 		counter <= 4'b1111;
-		colour <= 3'd2;
 	end
 
    wire next, frame;
@@ -87,7 +86,6 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 			orig_x <= temp_x;
 			orig_y <= temp_y;
 			finish <= 1'b0;
-			colour <= 3'd2;
       	end
 		else if (next) begin //start erase obj and ready for next drawing
 			temp_x <= orig_x;
@@ -117,7 +115,7 @@ module datapath(clock, resetn, draw, setoff, finish, x, y, colour);
 		   is_obs <= !is_obs;
 	   end
    end
-	
+
 	always @(*) begin
 		if (is_obs) begin
 			x <= obs_x0;
